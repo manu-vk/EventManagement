@@ -183,3 +183,39 @@ export const deleteUser = async (req, res) => {
     });
   }
 };
+export const createAdmin = async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+
+    const existingAdmin = await User.findOne({ email });
+
+    if (existingAdmin) {
+      return res.status(400).json({
+        success: false,
+        message: "Email already exists",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const admin = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      role: "admin",
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Admin created successfully",
+      admin,
+    });
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
