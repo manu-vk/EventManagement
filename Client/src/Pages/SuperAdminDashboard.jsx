@@ -11,6 +11,7 @@ import {
 function SuperAdminDashboard() {
   const [users, setUsers] = useState([]);
   const [activeTab, setActiveTab] = useState("users");
+  const [adminForm, setAdminForm] = useState({name: "",email: "",password: "",});
 
   useEffect(() => {
     fetchUsers();
@@ -31,6 +32,36 @@ function SuperAdminDashboard() {
       console.log(error);
     }
   };
+  const createAdmin = async (e) => {
+  e.preventDefault();
+
+  try {
+    const token = localStorage.getItem("token");
+
+    await API.post(
+      "/auth/create-admin",
+      adminForm,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    alert("Admin Created Successfully");
+
+    setAdminForm({
+      name: "",
+      email: "",
+      password: "",
+    });
+
+    fetchUsers();
+
+  } catch (error) {
+    console.log(error);
+  }
+};
 
   const logout = () => {
     localStorage.removeItem("token");
@@ -39,28 +70,28 @@ function SuperAdminDashboard() {
   };
 
   // ⭐ DELETE USER FUNCTION
-const handleDelete = async (id, role) => {
-  try {
-    const token = localStorage.getItem("token");
+  const handleDelete = async (id, role) => {
+    try {
+      const token = localStorage.getItem("token");
 
-    if (role === "superadmin") {
-      alert("You cannot delete a superadmin!");
-      return;
+      if (role === "superadmin") {
+        alert("You cannot delete a superadmin!");
+        return;
+      }
+
+      await API.delete(`/auth/user/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // 🔥 RELOAD DATA FROM SERVER (BEST FIX)
+      fetchUsers();
+
+    } catch (error) {
+      console.log(error);
     }
-
-    await API.delete(`/auth/user/${id}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    // 🔥 RELOAD DATA FROM SERVER (BEST FIX)
-    fetchUsers();
-
-  } catch (error) {
-    console.log(error);
-  }
-};
+  };
 
   // FILTER LOGIC
   const filteredUsers =
@@ -87,19 +118,27 @@ const handleDelete = async (id, role) => {
 
           <li
             onClick={() => setActiveTab("users")}
-            className={`flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer ${
-              activeTab === "users" ? "bg-white/20" : "hover:bg-white/10"
-            }`}
+            className={`flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer ${activeTab === "users" ? "bg-white/20" : "hover:bg-white/10"
+              }`}
           >
             <FaUsers />
             Users
           </li>
+          <li
+            onClick={() => setActiveTab("createAdmin")}
+            className={`flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer ${activeTab === "createAdmin"
+                ? "bg-white/20"
+                : "hover:bg-white/10"
+              }`}
+          >
+            <FaUserShield />
+            Create Admin
+          </li>
 
           <li
             onClick={() => setActiveTab("admins")}
-            className={`flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer ${
-              activeTab === "admins" ? "bg-white/20" : "hover:bg-white/10"
-            }`}
+            className={`flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer ${activeTab === "admins" ? "bg-white/20" : "hover:bg-white/10"
+              }`}
           >
             <FaUserShield />
             Admins
@@ -130,7 +169,7 @@ const handleDelete = async (id, role) => {
 
           <div className="bg-white p-6 rounded-xl shadow-lg border-l-4 border-blue-600">
             <p className="text-gray-500">Total Users</p>
-            <h2 className="text-3xl font-bold">{users.length-2}</h2>
+            <h2 className="text-3xl font-bold">{users.length - 2}</h2>
           </div>
 
           <div className="bg-white p-6 rounded-xl shadow-lg border-l-4 border-purple-600">
@@ -156,6 +195,66 @@ const handleDelete = async (id, role) => {
           </h2>
 
           <div className="overflow-x-auto">
+            {activeTab === "createAdmin" && (
+  <div className="bg-white p-6 rounded-xl shadow-lg">
+
+    <h2 className="text-2xl font-bold mb-5">
+      Create Admin
+    </h2>
+
+    <form
+      onSubmit={createAdmin}
+      className="flex flex-col gap-4"
+    >
+      <input
+        type="text"
+        placeholder="Admin Name"
+        value={adminForm.name}
+        onChange={(e) =>
+          setAdminForm({
+            ...adminForm,
+            name: e.target.value,
+          })
+        }
+        className="border p-3 rounded"
+      />
+
+      <input
+        type="email"
+        placeholder="Admin Email"
+        value={adminForm.email}
+        onChange={(e) =>
+          setAdminForm({
+            ...adminForm,
+            email: e.target.value,
+          })
+        }
+        className="border p-3 rounded"
+      />
+
+      <input
+        type="password"
+        placeholder="Password"
+        value={adminForm.password}
+        onChange={(e) =>
+          setAdminForm({
+            ...adminForm,
+            password: e.target.value,
+          })
+        }
+        className="border p-3 rounded"
+      />
+
+      <button
+        type="submit"
+        className="bg-purple-600 text-white py-3 rounded"
+      >
+        Create Admin
+      </button>
+
+    </form>
+  </div>
+)}
 
             <table className="w-full">
 
@@ -181,10 +280,9 @@ const handleDelete = async (id, role) => {
                       <td>
                         <span
                           className={`px-3 py-1 rounded-full text-sm text-white
-                            ${
-                              user.role === "superadmin"
-                                ? "bg-purple-600"
-                                : user.role === "admin"
+                            ${user.role === "superadmin"
+                              ? "bg-purple-600"
+                              : user.role === "admin"
                                 ? "bg-blue-600"
                                 : "bg-green-600"
                             }`}

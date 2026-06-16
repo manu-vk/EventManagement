@@ -24,7 +24,7 @@ function EventList() {
     return (
         <div className="min-h-screen bg-black">
 
-            
+
             <nav className="bg-yellow-400 text-white px-8 py-4 flex justify-between items-center shadow-md">
                 <h1 className="text-2xl font-bold">
                     EventHub
@@ -46,7 +46,7 @@ function EventList() {
                 }
             </nav>
 
-          
+
             <div className="max-w-7xl mx-auto px-6 py-12">
                 <div className="text-center mb-12">
 
@@ -58,7 +58,7 @@ function EventList() {
                     </p>
                 </div>
 
-             
+
                 <div className="grid md:grid-cols-3 gap-8">
 
                     {events.map((event) => (
@@ -68,7 +68,13 @@ function EventList() {
                         >
 
                             <img
-                                src={`http://localhost:5000${event.image}`}
+                                src={
+                                    event.image
+                                        ? event.image.startsWith("http")
+                                            ? event.image
+                                            : `https://eventmanagement-rish.onrender.com${event.image}`
+                                        : "/default.png"
+                                }
                                 alt="event"
                                 className="h-48 w-full object-cover"
                             />
