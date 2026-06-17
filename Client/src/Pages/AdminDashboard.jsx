@@ -82,7 +82,7 @@ function AdminDashboard() {
     setUserPassword("");
 
   } catch (error) {
-    console.log(res.data);
+   
     alert(error.response?.data?.message);
   }
 };
