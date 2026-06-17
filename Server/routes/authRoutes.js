@@ -1,5 +1,5 @@
 import express from "express";
-import { registerUser,getUsers,getAllUsers,loginUser,deleteUser,createAdmin } from "../controllers/authController.js";
+import { registerUser,getUsers,getAllUsers,loginUser,deleteUser,createAdmin, createUser } from "../controllers/authController.js";
 import { protect, superAdminOnly } from "../middleware/authMiddlewere.js";
 
 
@@ -11,5 +11,6 @@ router.get("/", getUsers);
 router.post("/create-admin",protect,superAdminOnly,createAdmin);
 router.get("/all-users",protect,superAdminOnly,getAllUsers);
 router.delete("/user/:id", protect, superAdminOnly, deleteUser);
+router.post("/create-user", protect, createUser);
 
 export default router;
