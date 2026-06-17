@@ -11,8 +11,11 @@ import {
 function SuperAdminDashboard() {
   const [users, setUsers] = useState([]);
   const [activeTab, setActiveTab] = useState("users");
-  const [adminForm, setAdminForm] = useState({name: "",email: "",password: "",});
- 
+  const [adminForm, setAdminForm] = useState({ name: "", email: "", password: "", });
+  const [userName, setUserName] = useState("");
+  const [userEmail, setUserEmail] = useState("");
+  const [userPassword, setUserPassword] = useState("");
+
 
   useEffect(() => {
     fetchUsers();
@@ -34,35 +37,35 @@ function SuperAdminDashboard() {
     }
   };
   const createAdmin = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  try {
-    const token = localStorage.getItem("token");
+    try {
+      const token = localStorage.getItem("token");
 
-    await API.post(
-      "/auth/create-admin",
-      adminForm,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+      await API.post(
+        "/auth/create-admin",
+        adminForm,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-    alert("Admin Created Successfully");
+      alert("Admin Created Successfully");
 
-    setAdminForm({
-      name: "",
-      email: "",
-      password: "",
-    });
+      setAdminForm({
+        name: "",
+        email: "",
+        password: "",
+      });
 
-    fetchUsers();
+      fetchUsers();
 
-  } catch (error) {
-    console.log(error);
-  }
-};
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const logout = () => {
     localStorage.removeItem("token");
@@ -70,7 +73,7 @@ function SuperAdminDashboard() {
     window.location.href = "/login";
   };
 
-  // ⭐ DELETE USER FUNCTION
+  
   const handleDelete = async (id, role) => {
     try {
       const token = localStorage.getItem("token");
@@ -86,7 +89,7 @@ function SuperAdminDashboard() {
         },
       });
 
-      // 🔥 RELOAD DATA FROM SERVER (BEST FIX)
+  
       fetchUsers();
 
     } catch (error) {
@@ -94,11 +97,32 @@ function SuperAdminDashboard() {
     }
   };
 
-  // FILTER LOGIC
   const filteredUsers =
     activeTab === "admins"
       ? users.filter((user) => user.role === "admin")
       : users.filter((user) => user.role === "user");
+      const createUser = async (e) => {
+  e.preventDefault();
+
+  try {
+    const res = await API.post("/auth/create-user", {
+      name: userName,
+      email: userEmail,
+      password: userPassword,
+    });
+
+    alert(res.data.message);
+
+    setUserName("");
+    setUserEmail("");
+    setUserPassword("");
+
+    fetchUsers();
+
+  } catch (error) {
+    alert(error.response?.data?.message);
+  }
+};
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -128,12 +152,22 @@ function SuperAdminDashboard() {
           <li
             onClick={() => setActiveTab("createAdmin")}
             className={`flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer ${activeTab === "createAdmin"
-                ? "bg-white/20"
-                : "hover:bg-white/10"
+              ? "bg-white/20"
+              : "hover:bg-white/10"
               }`}
           >
             <FaUserShield />
             Create Admin
+          </li>
+          <li
+            onClick={() => setActiveTab("createUser")}
+            className={`flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer ${activeTab === "createUser"
+                ? "bg-white/20"
+                : "hover:bg-white/10"
+              }`}
+          >
+            <FaUsers />
+            Create User
           </li>
 
           <li
@@ -196,66 +230,109 @@ function SuperAdminDashboard() {
           </h2>
 
           <div className="overflow-x-auto">
-            {activeTab === "createAdmin" && (
-  <div className="bg-white p-6 rounded-xl shadow-lg">
+            {activeTab === "createUser" && (
+  <div className="bg-white p-8 rounded-xl shadow-lg max-w-lg">
 
-    <h2 className="text-2xl font-bold mb-5">
-      Create Admin
+    <h2 className="text-2xl font-bold mb-6">
+      Create User
     </h2>
 
-    <form
-      onSubmit={createAdmin}
-      className="flex flex-col gap-4"
-    >
+    <form onSubmit={createUser} className="space-y-4">
+
       <input
         type="text"
-        placeholder="Admin Name"
-        value={adminForm.name}
-        onChange={(e) =>
-          setAdminForm({
-            ...adminForm,
-            name: e.target.value,
-          })
-        }
-        className="border p-3 rounded"
+        placeholder="Name"
+        value={userName}
+        onChange={(e) => setUserName(e.target.value)}
+        className="w-full border p-3 rounded"
       />
 
       <input
         type="email"
-        placeholder="Admin Email"
-        value={adminForm.email}
-        onChange={(e) =>
-          setAdminForm({
-            ...adminForm,
-            email: e.target.value,
-          })
-        }
-        className="border p-3 rounded"
+        placeholder="Email"
+        value={userEmail}
+        onChange={(e) => setUserEmail(e.target.value)}
+        className="w-full border p-3 rounded"
       />
 
       <input
         type="password"
         placeholder="Password"
-        value={adminForm.password}
-        onChange={(e) =>
-          setAdminForm({
-            ...adminForm,
-            password: e.target.value,
-          })
-        }
-        className="border p-3 rounded"
+        value={userPassword}
+        onChange={(e) => setUserPassword(e.target.value)}
+        className="w-full border p-3 rounded"
       />
 
       <button
         type="submit"
-        className="bg-purple-600 text-white py-3 rounded"
+        className="bg-green-600 text-white px-5 py-3 rounded"
       >
-        Create Admin
+        Create User
       </button>
 
     </form>
   </div>
 )}
+            {activeTab === "createAdmin" && (
+              <div className="bg-white p-6 rounded-xl shadow-lg">
+
+                <h2 className="text-2xl font-bold mb-5">
+                  Create Admin
+                </h2>
+
+                <form
+                  onSubmit={createAdmin}
+                  className="flex flex-col gap-4"
+                >
+                  <input
+                    type="text"
+                    placeholder="Admin Name"
+                    value={adminForm.name}
+                    onChange={(e) =>
+                      setAdminForm({
+                        ...adminForm,
+                        name: e.target.value,
+                      })
+                    }
+                    className="border p-3 rounded"
+                  />
+
+                  <input
+                    type="email"
+                    placeholder="Admin Email"
+                    value={adminForm.email}
+                    onChange={(e) =>
+                      setAdminForm({
+                        ...adminForm,
+                        email: e.target.value,
+                      })
+                    }
+                    className="border p-3 rounded"
+                  />
+
+                  <input
+                    type="password"
+                    placeholder="Password"
+                    value={adminForm.password}
+                    onChange={(e) =>
+                      setAdminForm({
+                        ...adminForm,
+                        password: e.target.value,
+                      })
+                    }
+                    className="border p-3 rounded"
+                  />
+
+                  <button
+                    type="submit"
+                    className="bg-purple-600 text-white py-3 rounded"
+                  >
+                    Create Admin
+                  </button>
+
+                </form>
+              </div>
+            )}
 
             <table className="w-full">
 
