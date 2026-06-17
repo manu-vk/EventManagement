@@ -16,6 +16,10 @@ function AdminDashboard() {
   const [events, setEvents] = useState([]);
   const [users, setUsers] = useState([]);
   const [tickets, setTickets] = useState([]);
+  const [userName, setUserName] = useState("");
+  const [userEmail, setUserEmail] = useState("");
+  const [userPassword, setUserPassword] = useState("");
+   const [activeTab, setActiveTab] = useState("dashboard");
 
   const currentUser = JSON.parse(localStorage.getItem("user"));
 
@@ -25,14 +29,14 @@ function AdminDashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      
+
       const eventRes = await API.get("/events");
       setEvents(eventRes.data.events || []);
 
-    
+
       const userRes = await API.get("/auth");
 
-      
+
       const sortedUsers = (userRes.data.users || [])
         .sort((a, b) => {
           const dateA = new Date(a.lastLogin || a.createdAt);
@@ -42,7 +46,7 @@ function AdminDashboard() {
 
       setUsers(sortedUsers);
 
-     
+
       if (currentUser?._id) {
         const ticketRes = await API.get(`/tickets/user/${currentUser._id}`);
         setTickets(ticketRes.data.tickets || []);
@@ -58,6 +62,30 @@ function AdminDashboard() {
     localStorage.removeItem("user");
     window.location.href = "/login";
   };
+
+  const createUser = async (e) => {
+  e.preventDefault();
+
+  try {
+    const res = await API.post("/auth/create-user", {
+      name: userName,
+      email: userEmail,
+      password: userPassword,
+    });
+
+    alert(res.data.message);
+
+    fetchDashboardData();
+
+    setUserName("");
+    setUserEmail("");
+    setUserPassword("");
+
+  } catch (error) {
+    console.log(res.data);
+    alert(error.response?.data?.message);
+  }
+};
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -101,6 +129,16 @@ function AdminDashboard() {
             <FaUsers />
             Users
           </li>
+          <li
+            onClick={() => setActiveTab("createUser")}
+            className={`flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer ${activeTab === "createUser"
+              ? "bg-white/20"
+              : "hover:bg-white/10"
+              }`}
+          >
+            <FaUsers />
+            Create User
+          </li>
 
           <div className="border-t border-white/20 my-4"></div>
 
@@ -115,7 +153,7 @@ function AdminDashboard() {
         </ul>
       </div>
 
-   
+
       <div className="flex-1 p-8">
 
         <h1 className="text-4xl font-bold text-blue-700 mb-8">
@@ -135,7 +173,7 @@ function AdminDashboard() {
           </div>
         </div>
 
-        
+
         <div className="bg-white rounded-xl shadow-lg p-6 mt-10">
 
           <h2 className="text-2xl font-bold text-blue-700 mb-5">
@@ -143,6 +181,50 @@ function AdminDashboard() {
           </h2>
 
           <div className="overflow-x-auto">
+            {activeTab === "createUser" && (
+              <div className="bg-white p-6 rounded-xl shadow-lg max-w-md">
+
+                <h2 className="text-2xl font-bold mb-4">
+                  Create User
+                </h2>
+
+                <form onSubmit={createUser}>
+
+                  <input
+                    type="text"
+                    placeholder="Name"
+                    value={userName}
+                    onChange={(e) => setUserName(e.target.value)}
+                    className="w-full border p-3 rounded mb-3"
+                  />
+
+                  <input
+                    type="email"
+                    placeholder="Email"
+                    value={userEmail}
+                    onChange={(e) => setUserEmail(e.target.value)}
+                    className="w-full border p-3 rounded mb-3"
+                  />
+
+                  <input
+                    type="password"
+                    placeholder="Password"
+                    value={userPassword}
+                    onChange={(e) => setUserPassword(e.target.value)}
+                    className="w-full border p-3 rounded mb-3"
+                  />
+
+                  <button
+                    type="submit"
+                    className="bg-blue-600 text-white px-4 py-2 rounded"
+                  >
+                    Create User
+                  </button>
+
+                </form>
+
+              </div>
+            )}
 
             <table className="w-full">
 
